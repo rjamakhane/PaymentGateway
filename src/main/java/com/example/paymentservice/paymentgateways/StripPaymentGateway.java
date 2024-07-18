@@ -8,37 +8,32 @@ import com.stripe.model.Product;
 import com.stripe.param.PaymentLinkCreateParams;
 import com.stripe.param.PriceCreateParams;
 import com.stripe.param.ProductCreateParams;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 @Component
+@Primary
 public class StripPaymentGateway implements PaymentGateway{
+    @Value("${stripe.secret}")
+    private String stripeApiKey;
     @Override
-    public String createPaymentLink(Long orderId) throws StripeException {
-        Stripe.apiKey = "sk_test_51PKMZZSCatIh9LlOwM0baviOvc1Uf7wnOKWEwVTFSDuycT6Tereu8OesQe8KRZiAamReIuYBiW5OBelzCX96xAeF00rhGVqb3J";
-        ProductCreateParams productParams =
-                ProductCreateParams.builder()
-                        .setName("Starter Subscription")
-                        .setDescription("$12/Month subscription")
-                        .build();
-        Product product = Product.create(productParams);
-        System.out.println("Success! Here is your starter subscription product id: " + product.getId());
+    public String createPaymentLink(Long orderId, Long amount, String phoneNumber) throws StripeException {
+        Stripe.apiKey = stripeApiKey;
 
-        PriceCreateParams params =
-                PriceCreateParams
-                        .builder()
-                        .setProduct(product.getId())
-                        .setCurrency("usd")
-                        .setUnitAmount(1200L)
-                        .setRecurring(
-                                PriceCreateParams.Recurring
-                                        .builder()
-                                        .setInterval(PriceCreateParams.Recurring.Interval.MONTH)
-                                        .build())
+        PriceCreateParams priceCreateParams =
+                PriceCreateParams.builder()
+                        .setCurrency("inr")
+                        .setUnitAmount(amount)
+                        .setProductData(
+                                PriceCreateParams.ProductData.builder().setName("iPhone 15").build()
+                        )
                         .build();
-        Price price = Price.create(params);
+        Price price = Price.create(priceCreateParams);
 
-        PaymentLinkCreateParams params1 =
+
+
+        PaymentLinkCreateParams paymentLinkCreateParams =
                 PaymentLinkCreateParams.builder()
                         .addLineItem(
                                 PaymentLinkCreateParams.LineItem.builder()
@@ -46,9 +41,20 @@ public class StripPaymentGateway implements PaymentGateway{
                                         .setQuantity(1L)
                                         .build()
                         )
+                        .setAfterCompletion(
+                                PaymentLinkCreateParams.AfterCompletion.builder()
+                                        .setType(PaymentLinkCreateParams.AfterCompletion.Type.REDIRECT) // Callback
+                                        .setRedirect(PaymentLinkCreateParams.AfterCompletion.Redirect.builder()
+                                                .setUrl("https://www.scaler.com/academy/instructor-dashboard/")
+                                                .build()
+                                        )
+                                        .build()
+
+                        )
                         .build();
 
-        PaymentLink paymentLink = PaymentLink.create(params1);
-        return paymentLink.getUrl();
+        PaymentLink paymentLink = PaymentLink.create(paymentLinkCreateParams);
+
+        return paymentLink.toString();
     }
 }

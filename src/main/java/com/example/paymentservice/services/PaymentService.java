@@ -15,9 +15,9 @@ public class PaymentService {
         this.paymentGateway = paymentGateway;
     }
 
-    public String createPaymentLink(Long orderId) throws StripeException, RazorpayException {
+    public String createPaymentLink(Long orderId, Long amount, String phonenumber) throws StripeException, RazorpayException {
         // call the razorpay api or Stripe api to create a payment link
 //        orderId = 123L;
-        return paymentGateway.createPaymentLink(orderId);
+        return paymentGateway.createPaymentLink(orderId, amount, phonenumber);
     }
 }

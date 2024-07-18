@@ -8,17 +8,17 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 @Component
-@Primary
+//@Primary
 public class RazorPayPaymentGateway implements PaymentGateway {
     private RazorpayClient razorpay;
     public  RazorPayPaymentGateway(RazorpayClient razorpay){
         this.razorpay = razorpay;
     }
     @Override
-    public String createPaymentLink(Long orderId) throws RazorpayException {
+    public String createPaymentLink(Long orderId, Long amount, String phonenumber) throws RazorpayException {
         // call the razorpay api to create a payment link
         JSONObject paymentLinkRequest = new JSONObject();
-        paymentLinkRequest.put("amount",1000); //1000 will be 10.00 as last two digits are considered as decimal
+        paymentLinkRequest.put("amount",amount); //1000 will be 10.00 as last two digits are considered as decimal
         paymentLinkRequest.put("currency","INR");
 //        paymentLinkRequest.put("accept_partial",true);
 //        paymentLinkRequest.put("first_min_partial_amount",100);
@@ -27,7 +27,7 @@ public class RazorPayPaymentGateway implements PaymentGateway {
         paymentLinkRequest.put("reference_id",orderId.toString());
         paymentLinkRequest.put("description","Payment for orderId "+orderId.toString());
         JSONObject customer = new JSONObject();
-        customer.put("name", "8747074498");
+        customer.put("name", phonenumber);
         customer.put("contact","Deepak Kasera");
         customer.put("email","deepak.kasera@scaler.com");
         paymentLinkRequest.put("customer",customer);
@@ -42,15 +42,7 @@ public class RazorPayPaymentGateway implements PaymentGateway {
         paymentLinkRequest.put("callback_url","https://www.scaler.com/academy/mentee-dashboard/todos");
         paymentLinkRequest.put("callback_method","get");
 
-        try {
-            PaymentLink payment = razorpay.paymentLink.create(paymentLinkRequest);
-            // Assuming a successful response, parse it
-            System.out.println("Payment Link Created: " + payment.toString());
-            return payment.get("short_url").toString();
-        } catch (RazorpayException e) {
-            // Handle API errors here
-            System.err.println("Razorpay API Error: " + e.getMessage());
-        }
-        return null;
+        PaymentLink payment = razorpay.paymentLink.create(paymentLinkRequest);
+        return payment.get("short_url").toString();
     }
 }

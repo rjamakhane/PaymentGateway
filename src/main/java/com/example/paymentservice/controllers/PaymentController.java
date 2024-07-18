@@ -21,12 +21,8 @@ public class PaymentController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<String> createPaymentLink(@RequestBody CreatePaymentLinkRequestDto createPaymentLinkRequestDto)  {
-        try{
-            String paymentLink= paymentService.createPaymentLink(createPaymentLinkRequestDto.getOrderId());
-            return new ResponseEntity<>(paymentLink, HttpStatus.OK);
-        } catch (Exception e) {
-           throw new RuntimeException(e);
-        }
+    public ResponseEntity<String> createPaymentLink(@RequestBody CreatePaymentLinkRequestDto createPaymentLinkRequestDto) throws StripeException, RazorpayException {
+        String paymentLink= paymentService.createPaymentLink(createPaymentLinkRequestDto.getOrderId(), createPaymentLinkRequestDto.getAmount(), createPaymentLinkRequestDto.getPhoneNumber());
+        return new ResponseEntity<>(paymentLink, HttpStatus.OK);
     }
 }
