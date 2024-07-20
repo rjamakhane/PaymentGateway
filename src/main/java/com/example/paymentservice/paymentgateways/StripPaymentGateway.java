@@ -55,6 +55,6 @@ public class StripPaymentGateway implements PaymentGateway{
 
         PaymentLink paymentLink = PaymentLink.create(paymentLinkCreateParams);
 
-        return paymentLink.toString();
+        return paymentLink.getUrl();
     }
 }
